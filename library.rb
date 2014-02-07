@@ -4,17 +4,23 @@ class Book
   attr_reader :title
   attr_reader :id
   attr_reader :status
+  attr_reader :borrower
 
-  def initialize(title="The Stranger", author="Albert Camus")
+  @@count = 0
+
+  def initialize(title, author)
     @author = author
     @title = title
-    @id = nil
     @status = 'available'
+    @@count += 1
+    @id = @@count
+    @borrower = ''
   end
 
-  def check_out
+  def check_out(borrower)
     if @status == 'available'
       @status = 'checked_out'
+      @borrower = borrower.name
       return true
     else
       return false
@@ -22,6 +28,7 @@ class Book
   end
 
   def check_in
+    @borrower = ''
     @status = 'available'
   end
 
@@ -37,6 +44,7 @@ end
 
 class Library
   attr_reader :books
+  attr_reader :count
   def initialize
     @books = []
     @count = 0
@@ -44,21 +52,34 @@ class Library
 
   def register_new_book(name, author)
     @books << Book.new(name, author)
+    @count += 1
   end
 
-  # def books
-  #   def count
-  #     @count += 1
-  #   end
+  # def add_book(title, author)
+  #   @books << Book.new(name, author)
+  #   @count += 1
   # end
 
-  def add_book(title, author)
+  def check_out_book(book_id, borrower)
+    @books.each do |x|
+      if x.id == book_id && x.status == 'available'
+        x.check_out(borrower)
+        return x
+      end
+      return nil
+    end
   end
 
-  def check_out_book(book_id, borrower)
+  def get_borrower(book_id)
+    @books.each do |x|
+      if x.id == book_id
+        return x.borrower
+      end
+    end
   end
 
   def check_in_book(book)
+
   end
 
   def available_books
