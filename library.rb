@@ -14,13 +14,15 @@ class Book
     @status = 'available'
     @@count += 1
     @id = @@count
-    @borrower = ''
+    @borrower = []
   end
 
   def check_out(borrower)
-    if @status == 'available'
+    puts @status
+    if @status == 'available' && borrower.checked_out < 2
       @status = 'checked_out'
-      @borrower = borrower.name
+      @borrower << borrower
+      @borrower.first.checked_out += 1
       return true
     else
       return false
@@ -28,8 +30,9 @@ class Book
   end
 
   def check_in
-    @borrower = ''
     @status = 'available'
+    @borrower.first.checked_out -= 1
+    @borrower = []
   end
 
 
@@ -37,7 +40,9 @@ end
 
 class Borrower
   attr_reader :name
+  attr_accessor :checked_out
   def initialize(name)
+    @checked_out = 0
     @name = name
   end
 end
@@ -45,9 +50,12 @@ end
 class Library
   attr_reader :books
   attr_reader :count
+  attr_accessor :available_books
+  attr_accessor :borrowed_books
   def initialize
     @books = []
     @count = 0
+    @borrowed_books =[]
   end
 
   def register_new_book(name, author)
@@ -62,29 +70,31 @@ class Library
 
   def check_out_book(book_id, borrower)
     @books.each do |x|
-      if x.id == book_id && x.status == 'available'
-        x.check_out(borrower)
+      puts @books
+      if x.id == book_id && x.check_out(borrower)
         return x
       end
-      return nil
     end
+    return nil
   end
 
   def get_borrower(book_id)
     @books.each do |x|
       if x.id == book_id
-        return x.borrower
+        return x.borrower.first.name
       end
     end
   end
 
   def check_in_book(book)
-
+    book.check_in
   end
 
   def available_books
+    @books.select { |x| x.status == 'available' }
   end
 
   def borrowed_books
+    @books.select { |x| x.status == 'checked_out' }
   end
 end
