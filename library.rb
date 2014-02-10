@@ -111,4 +111,9 @@ class Library
   def borrowed_books
     @books.select { |book| book.status == 'checked_out' }
   end
+
+  def book_due_dates
+    book_list = borrowed_books
+    book_list.each { |book| puts "#{book.title} checked out by #{book.borrower.first.name}. Due date: #{book.due_date.strftime("%B %d, %Y")}."}
+  end
 end
