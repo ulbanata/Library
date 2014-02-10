@@ -18,17 +18,23 @@ class Book
     @id = @@count
     @borrower = []
     @due_date = nil
+    @waitlist = []
   end
 
   def check_out(borrower_obj)
     overdue = check_overdue(borrower_obj)
     cur_date = Time.new
-    if @status == 'available' && borrower_obj.checked_out.length < 2 && !overdue
+    puts @status == 'available' && borrower_obj.checked_out.length < 2 && !overdue && (@waitlist.length == 0 || @waitlist.first.name == borrower_obj.name)
+    if (@status == 'available' && borrower_obj.checked_out.length < 2 && !overdue && (@waitlist.length == 0 || @waitlist.first.name == borrower_obj.name))
+      puts "Book checked out"
       @status = 'checked_out'
       @borrower << borrower_obj
       @due_date = Time.now + 604800
+      @waitlist.shift if @waitlist.length > 0
       return true
     else
+      @waitlist << borrower_obj
+      puts "Book not checked out"
       return false
     end
   end
@@ -36,7 +42,7 @@ class Book
   def check_overdue(borrower_obj)
     cur_date = Time.now
     borrower_obj.checked_out.each do |book|
-      return true if (book.due_date - cur_date) <= 0
+      return true if book.due_date <= cur_date
     end
     return false
   end
@@ -113,7 +119,12 @@ class Library
   end
 
   def book_due_dates
-    book_list = borrowed_books
-    book_list.each { |book| puts "#{book.title} checked out by #{book.borrower.first.name}. Due date: #{book.due_date.strftime("%B %d, %Y")}."}
+    borrowed_books.each { |book| puts "#{book.title} checked out by #{book.borrower.first.name}. Due date: #{book.due_date.strftime("%B %d, %Y")}."}
+  end
+
+  def overdue_books
+    borrowed_books.each do |book|
+        puts "#{book.title} was due on #{book.due_date.strftime("%B %d, %Y")}.}" if book.check_overdue(book.borrower.first)
+    end
   end
 end
